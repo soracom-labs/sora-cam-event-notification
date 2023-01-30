@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sora-cam-event-notification
+
+Parameters:
+  soracomAuthKeyId:
+    Type: String
+    Default: "keyId-xxxxxxx"
+  soracomAuthKey:
+    Type: String
+    Default: "secret-xxxxxx"
+  deviceId:
+    Type: String
+    Default: "XXXXXXXXXXXX"
+  lineNotifyToken:
+    Type: String
+    Default: "replace it to your own token"
+
+Globals:
+  Function:
+    Timeout: 30
+
+Resources:
+  NotificationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: sora-cam-event-notification
+      CodeUri: sora_cam_event_notification
+      Handler: app.lambda_handler
+      # We use this runtime version because we would like to build and deploy the App from AWS CloudShell.
+      Runtime: python3.7
+      Environment:
+        Variables:
+          SORACOM_AUTH_KEY_ID: !Ref soracomAuthKeyId
+          SORACOM_AUTH_KEY: !Ref soracomAuthKey
+          DEVICE_ID: !Ref deviceId
+          LINE_NOTIFY_TOKEN: !Ref lineNotifyToken
+          # If you change the trigger frequency, also change the following variable.
+          EVENT_RETRIEVE_INTERVAL_SEC: "60"
+      Architectures:
+        - x86_64
+      Events:
+        Schedule:
+          Type: Schedule
+          Properties:
+            Name: sora-cam-event-notification-schedule
+            # By default, scheduled to trigger the Lambda every minute.
+            Schedule: cron(* * ? * * *)
